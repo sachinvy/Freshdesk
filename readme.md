@@ -80,6 +80,7 @@ Notes :
 - Script is creating sqlite database if not exist in ./
 - Currently workflow of activities is not random completely, it follows a hard coded sequence and we are taking random slice from that sequence. 
 - Currently the output file is having a json structure, writing list containing json instead of each line of file having json structure.
+- Currently this program is creating note to tickets but not adding it to database.
   
   
   
@@ -100,7 +101,7 @@ performed_at | Date | | | when the activity was performed on this ticket
 priority | Text | | | Priority of ticket.
 requestor| INT | | | Id of person requested to open this ticket
 agent_id | INT | | | Id of agent currently handing this ticket
-------------------------------------------------------------------------------------------------------|
+
        - Activity_history =  table contains all the activity performed on the ticket with details of activity.
     
 Column_name      | Data type   | Constraint    | Default   | comment                                  
@@ -110,7 +111,7 @@ status | Text | | | status of ticket
 performed_at | Date | | | when the activity was performed on this ticket
 requestor| INT | | | Id of person requested activity this ticket
 agent_id | INT | | | Id of agent performed activity on this ticket
-------------------------------------------------------------------------------------------------------|
+
    - Ticket_details = Table containing Ticket details.
    
 Column_name      | Data type   | Constraint    | Default   | comment                                  
@@ -120,5 +121,5 @@ shipping_address | Text | | | Shipment address of product.
 Shipment_date | Date | | | shipment date
 category| Text | | | Category of product
 Group_type | Text | | | Group handling the ticket.
-------------------------------------------------------------------------------------------------------|
+
    
