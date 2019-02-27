@@ -57,7 +57,7 @@ The status column can be any of the following values:
 ## Solution
 - Random Realistic Ticket Creator (./config/ticket_creator.py) aka RRTC
   - Python program generates the random ticket data based on configuration file (./config/system_config.py), which is having valid values of all the parameter of tickets and activities on ticket.
-  - Program also randomly (not really :) ) selects the work flow of activities to be performed on tickets based on above mentioned config file.
+  - Program also randomly selects the work flow of activities to be performed on tickets based on above mentioned config file. Currently order of activities is not random so all activates will follow a hard coded sequence but number of activities will be random.
   - loads the data in to a json file.
 - Ticket Loader to sqlite (./datalayer/databaseloader.py)
   - This programs takes the json file created by RRTC and loads them to sqlite database.
