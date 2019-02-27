@@ -1,7 +1,8 @@
 
 
 #Introduction 
-## Freshdesk, a helpdesk system, allows the export of activity information of all tickets. The export takes the following form: 
+### Freshdesk, a helpdesk system, allows the export of activity information of all tickets. 
+### The export takes the following form: 
 
 { 
 "metadata": { 
@@ -41,46 +42,83 @@
 "requester": 145423, 
 "product": "mobile" 
 } 
-{'performed_at': "", 
-'ticket_id': 1500, 
-'performer_type': 'user', 
-'performer_id': 149017, 
-'activity': {
-'shipping_address': 'NA', 
-'shipment_date': '26 Feb 2019', 
-'category': 'Phone', 
-'contacted_customer': False, 
-'issue_type': 'Incident', 
-'source': 'Phone', 
-'status': 'Waiting for Third Party', 
-'priority': 'Medium', 
-'group': 'refund', 
-'agent_id': 149016, 
-'requester': 10031, 
-'product': 'mobile'}}
-} 
 ] 
 } 
 
 
 The status column can be any of the following values: 
-"Open"
-"Closed"
-"Resolved"
-"Waiting for Customer"
-"Waiting for Third Party"
-"Pending"
+- "Open"
+- "Closed"
+- "Resolved"
+- "Waiting for Customer"
+- "Waiting for Third Party"
+- "Pending"
 
-Steps 
-Write a Python program which will randomly generate realistic ticket data based on the above JSON format and store the data in a JSON file on disk. It should generate a random activity distribution for a configurable number of tickets. The program will be checked for realism of data, and for the ability to handle large amounts of records.Example: ticket_gen -n 1000 -o activities.json to generate 1000 tickets with random activities into the activities.json file.
-Write a program (in a language if your choice) to read the above generated JSON file and store the data into a SQLite database in a relational format. The program will be checked for relational modelling.
-Write a SQL script that can be run on the database to 
-generate the following attributes for each ticket: 
-Time spent Open
-Time spent Waiting on Customer
-Time spent waiting for response (Pending Status)
-Time till resolution
-Time to first response
-Example:| ticket_id | time_spent_open | time_spent_waiting_on_customer | time_spent_waiting_for_response | time_till_resolution | time_to_first_response 
- | 704 | 12 | 90 | 1200 | 1300 | 10 |
-Ensure all the above programs can be run in sequence using a bash script, Makefile, or equivalent.
+## Solution
+- Random Realistic Ticket Creator (./config/ticket_creator.py) aka RRTC
+  - Python program generates the random ticket data based on configuration file (./config/system_config.py), which is having valid values of all the parameter of tickets and activities on ticket.
+  - Program also randomly (not really :) ) selects the work flow of activities to be performed on tickets based on above mentioned config file.
+  - loads the data in to a json file.
+- Ticket Loader to sqlite (./datalayer/databaseloader.py)
+  - This programs takes the json file created by RRTC and loads them to sqlite database.
+  - Please refer below for table schema.
+- Report Generator (./datalayer/report_generator.py)
+  - Runs the report query on sqlite database and extracts below parameter.
+    - Time spent Open
+    - Time spent Waiting on Customer
+    - Time spent waiting for response (Pending Status)
+    - Time till resolution
+    - Time to first response (Not available as this is same as Open to any other stage)
+- wrapper (./main_program.py)
+    - wrapper scripts to run all the above program sequentially.
+    - format to run 
+    ```python
+       >python main_program.py -n <number_of_tickets_to_create> -o <Json_file_name> -r <report_file_name>
+       >python main_program.py -n 10 -o sachin.json -r sachin.report.txt
+    ```
+Notes :
+- Script is creating sqlite database if not exist in ./
+- Currently workflow of activities is not random completely, it follows a hard coded sequence and we are taking random slice from that sequence. 
+- Currently the output file is having a json structure, writing list containing json instead of each line of file having json structure.
+  
+  
+  
+  
+  
+  
+  
+  - Database schema :
+    - Ticket
+        = table containing current status of all the tickets in the system
+
+Column_name      | Data type   | Constraint    | Default   | comment                                  
+-----------------|-------------|---------------|-----------|------------------------------------------
+ticket_id        | INT | PRIMARY KEY | | Ticket id of ticket.
+issue_type | Text | | | Issue type of ticket
+status | Text | | | current status of ticket
+performed_at | Date | | | when the activity was performed on this ticket
+priority | Text | | | Priority of ticket.
+requestor| INT | | | Id of person requested to open this ticket
+agent_id | INT | | | Id of agent currently handing this ticket
+------------------------------------------------------------------------------------------------------|
+       - Activity_history =  table contains all the activity performed on the ticket with details of activity.
+    
+Column_name      | Data type   | Constraint    | Default   | comment                                  
+-----------------|-------------|---------------|-----------|------------------------------------------
+ticket_id        | INT |  | | Ticket id of ticket.
+status | Text | | | status of ticket
+performed_at | Date | | | when the activity was performed on this ticket
+requestor| INT | | | Id of person requested activity this ticket
+agent_id | INT | | | Id of agent performed activity on this ticket
+------------------------------------------------------------------------------------------------------|
+   - Ticket_details = Table containing Ticket details.
+   
+Column_name      | Data type   | Constraint    | Default   | comment                                  
+-----------------|-------------|---------------|-----------|------------------------------------------
+ticket_id        | INT |  | | Ticket id of ticket.
+shipping_address | Text | | | Shipment address of product.
+Shipment_date | Date | | | shipment date
+category| Text | | | Category of product
+Group_type | Text | | | Group handling the ticket.
+------------------------------------------------------------------------------------------------------|
+   

@@ -1,29 +1,44 @@
 
 from datetime import datetime
 import logging
-
+import json
 import config.util_func as sc
 from config import loggerinit
 
-loggerinit.initialize_logger()
+
 logger = logging.getLogger(__name__)
 
 class Ticket():
 
+    """
+    Ticket class contains all the attributes which are common for all activies for ticket.
+
+    """
+
     def __init__(self):
+        """
+        constructor of class ticket,
+        Initializes all the attributes and creates all the activities based on work flow.
+        """
         self.ticket_id = sc.get_ticket_id()
         self.priority = sc.get_priority()
         self.work_flow = sc.get_work_flow()
         self.requester = sc.get_requester_id()
         self.activities = []
         self.notes = []
-        group = sc.get_random_group()
-        product = "mobile"
-        category = sc.get_random_category()
-        issue_type = sc.get_issue_type()
         self.performed_at = datetime.now()
 
+        #local variables used to passed as parameter to constructor of Activity.
+        group = sc.get_random_group()
+        category = sc.get_random_category()
+        issue_type = sc.get_issue_type()
+
+
         logger.debug("Creating ticket {} with activities {}.".format(self.ticket_id,", ".join(self.work_flow)))
+
+        if len(self.work_flow) == 0 :
+            logger.error("There is no workflow configured. exiting the program")
+            assert()
 
         for action in self.work_flow:
             self.activities.append(Activity(action, self.performed_at,issue_type,category, group))
@@ -33,6 +48,10 @@ class Ticket():
                 self.performed_at += sc.get_random_time()
 
     def get_json(self):
+        """
+        function to convert class attribute to dictionary which will be used to create final json.
+        :return: list containing dictionary/json data for each activity on the ticket.
+        """
         all_activity_data =[]
         for act in self.activities:
             activity_data = {}
@@ -71,6 +90,10 @@ class Ticket():
                 logger.debug("{} = {}".format(k, v))
 
 class Note():
+    """
+    class containing all the attributes of Note added to the ticket.
+
+    """
     def __init__(self):
         self.note_id = sc.get_note_id()
         self.type = sc.get_note_type()
@@ -84,7 +107,12 @@ class Note():
 
 
 class Activity():
+    """
+    Class containing various activity performed on the ticket.
+    """
     def __init__(self, action="Open", performed_at=False, priority="Medium",issue_type="Incident", category="Phone", group="Refund"):
+
+
         self.performed_at = str(performed_at)
         self.shipping_address = "NA"
         self.shipment_date = "{:%d %b %Y}".format(performed_at)
@@ -100,6 +128,11 @@ class Activity():
         self.requester = sc.get_requester_id()
 
     def get_json(self):
+
+        """
+        function to convert class attribute to dictionary which will be used to create final json.
+        :return: dictionary/json data for each activity on the ticket.
+        """
         activity_sub_data = {}
         activity_sub_data['shipping_address'] = self.shipping_address
         activity_sub_data['shipment_date'] = self.shipment_date
@@ -116,16 +149,36 @@ class Activity():
 
         return activity_sub_data
 
+def create_multiple_tickets(num_of_ticket=0,output_file=None):
+    """
+
+    :param num_of_ticket:
+    :param output_file:
+    :return:
+    """
+
+    try:
+        final_list = []
+        logger.info("Started creating tickets")
+        for i in range(num_of_ticket):
+            final_list = final_list + Ticket().get_json()
+
+        with open(output_file,'w') as of:
+            json.dump(final_list,of)
+
+
+    except FileNotFoundError as e:
+        logger.error("Not able to open input file")
+        raise
+
+    except Exception as e:
+        logger.error("Got exception {} while creating ticket.".format(e))
+        raise
+
+    else:
+        logger.info("All the tickets are written to output file")
 
 
 if __name__ == "__main__":
-    import json
-    final = []
-    for i in range(20):
-        final = final + Ticket().get_json()
-    logger.debug(final)
-    with open("test.json",'w') as tj:
-        json.dump(final,tj)
-    logger.debug("========================================")
-    second = Ticket()
-    second.print_ticket()
+    # driver program for testing.
+    create_multiple_tickets(10,"test.json")

@@ -2,6 +2,10 @@ import logging
 
 
 def initialize_logger():
+    """
+    Initilize basic logger to be able to print logs on console.
+    :return:
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # create console handler and set level to info

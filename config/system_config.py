@@ -1,10 +1,4 @@
 #!/usr/bin/env python
-import random as ran
-from datetime import timedelta
-import itertools
-
-
-
 """
 system_config.py
 
@@ -66,21 +60,22 @@ agent_id = [
             149017,
             149018]
 
-ticket_start = 14000
 
+# valid values for issue type
 issue_type = [
                 'Incident',
                 'Issue',
                 'Defect'
                 ]
+# valid values for group
 group = [
                 'Refund',
                 'Delivery',
                 'Engineering'
         ]
+# valid values for category
 category = [
                 'Phone',
                 'Tablet',
-                'Wearable',
-                'TV'
+                'Wearable'
             ]
